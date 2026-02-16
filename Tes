@@ -1,95 +1,262 @@
--- God Mode UI - LocalScript
+local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ionlyusegithubformcmods/1-Line-Scripts/main/Mobile%20Friendly%20Orion"))()
 
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
+local Window = OrionLib:MakeWindow({
+    Name = "Admin Panel",
+    HidePremium = true,
+    SaveConfig = true,
+    ConfigFolder = "AdminPanel",
+    IntroEnabled = false
+})
 
--- UI
-local gui = Instance.new("ScreenGui")
-gui.Name = "GodModeGUI"
-gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local player = game.Players.LocalPlayer
+local humanoid = nil
+local walkSpeedValue = 16
+local jumpPowerValue = 50
+local speedLoop, jumpLoop = nil, nil
+local noclipEnabled = false
+local noclipLoop = nil
+local godModeEnabled = false
+local godConnections = {}
+local xrayEnabled = false
+local originalTransparency = {}
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 120)
-frame.Position = UDim2.new(0.05, 0, 0.4, 0)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-frame.BorderSizePixel = 0
-frame.Parent = gui
-
-local corner = Instance.new("UICorner", frame)
-corner.CornerRadius = UDim.new(0, 12)
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundTransparency = 1
-title.Text = "GOD MODE"
-title.TextColor3 = Color3.fromRGB(255, 100, 100)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.Parent = frame
-
-local button = Instance.new("TextButton")
-button.Size = UDim2.new(0.8, 0, 0, 40)
-button.Position = UDim2.new(0.1, 0, 0.45, 0)
-button.Text = "ENABLE"
-button.Font = Enum.Font.GothamBold
-button.TextSize = 16
-button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Parent = frame
-
-local buttonCorner = Instance.new("UICorner", button)
-buttonCorner.CornerRadius = UDim.new(0, 10)
-
--- God mode logic
-local godEnabled = false
-local healthConnection
-
-local function enableGod()
-	godEnabled = true
-	button.Text = "DISABLE"
-	button.BackgroundColor3 = Color3.fromRGB(120, 40, 40)
-
-	humanoid.MaxHealth = math.huge
-	humanoid.Health = humanoid.MaxHealth
-
-	healthConnection = humanoid.HealthChanged:Connect(function()
-		if godEnabled then
-			humanoid.Health = humanoid.MaxHealth
-		end
-	end)
+local function updateSpeed()
+    if humanoid and humanoid.Parent then
+        humanoid.WalkSpeed = walkSpeedValue
+    end
 end
 
-local function disableGod()
-	godEnabled = false
-	button.Text = "ENABLE"
-	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-
-	if healthConnection then
-		healthConnection:Disconnect()
-		healthConnection = nil
-	end
-
-	humanoid.MaxHealth = 100
-	humanoid.Health = 100
+local function updateJump()
+    if humanoid and humanoid.Parent then
+        humanoid.JumpPower = jumpPowerValue
+        pcall(function()
+            if humanoid:FindFirstChild("JumpHeight") then
+                humanoid.JumpHeight = jumpPowerValue / 2.5
+            end
+        end)
+    end
 end
 
-button.MouseButton1Click:Connect(function()
-	if godEnabled then
-		disableGod()
-	else
-		enableGod()
-	end
+local function toggleNoclip()
+    if noclipEnabled then
+        noclipLoop = game:GetService("RunService").Heartbeat:Connect(function()
+            if humanoid and player.Character then
+                for _, part in ipairs(player.Character:GetChildren()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    else
+        if noclipLoop then
+            noclipLoop:Disconnect()
+            noclipLoop = nil
+        end
+        if player.Character then
+            for _, part in ipairs(player.Character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+local function toggleGodMode(value)
+    godModeEnabled = value
+    local char = player.Character
+    if not char then return end
+
+    humanoid = char:WaitForChild("Humanoid")
+
+    -- Clean previous connections
+    for _, conn in ipairs(godConnections) do
+        pcall(function() conn:Disconnect() end)
+    end
+    godConnections = {}
+
+    if value then
+        -- Keep health always max
+        humanoid.Health = humanoid.MaxHealth
+
+        -- Health never decreases
+        table.insert(godConnections, humanoid.HealthChanged:Connect(function(health)
+            if health < humanoid.MaxHealth then
+                humanoid.Health = humanoid.MaxHealth
+            end
+        end))
+
+        -- Block death from any cause
+        table.insert(godConnections, humanoid.Died:Connect(function()
+            task.wait(0.05)
+            humanoid.Health = humanoid.MaxHealth
+            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+            humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end))
+
+        -- Block kill bricks / lava / touch damage
+        table.insert(godConnections, char:WaitForChild("HumanoidRootPart").Touched:Connect(function(hit)
+            if hit and (hit.Name:lower():match("kill") or hit.Name:lower():match("death") or hit.Name:lower():match("lava") or hit.Name:lower():match("damage") or hit.Name:lower():match("void")) then
+                humanoid.Health = humanoid.MaxHealth
+                local hrp = char:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 3, 0)
+                end
+            end
+        end))
+
+        -- Anti-reset / character remove protection
+        table.insert(godConnections, player.CharacterRemoving:Connect(function()
+            task.wait(0.1)
+            player:LoadCharacter()
+        end))
+
+        -- Block Dead state
+        table.insert(godConnections, humanoid.StateChanged:Connect(function(old, new)
+            if new == Enum.HumanoidStateType.Dead or new == Enum.HumanoidStateType.DeadFallingDown then
+                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+                humanoid.Health = humanoid.MaxHealth
+            end
+        end))
+    else
+        -- Reset when disabled
+        humanoid.Health = humanoid.MaxHealth
+    end
+end
+
+local function toggleXRay()
+    local ws = game:GetService("Workspace")
+    if xrayEnabled then
+        for _, obj in ipairs(ws:GetDescendants()) do
+            if (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) and
+               not obj:IsDescendantOf(player.Character) and
+               not game.Players:GetPlayerFromCharacter(obj.Parent) then
+                if not originalTransparency[obj] then
+                    originalTransparency[obj] = obj.Transparency
+                end
+                obj.LocalTransparencyModifier = 0.75
+            end
+        end
+    else
+        for part, trans in pairs(originalTransparency) do
+            if part and part.Parent then
+                part.LocalTransparencyModifier = 0
+            end
+        end
+        originalTransparency = {}
+    end
+end
+
+-- Initialization
+spawn(function()
+    while not player.Character do task.wait(0.1) end
+    humanoid = player.Character:WaitForChild("Humanoid")
+    
+    task.spawn(function()
+        while humanoid and humanoid.Parent do
+            updateSpeed()
+            updateJump()
+            task.wait(0.1)
+        end
+    end)
+    
+    player.CharacterAdded:Connect(function(char)
+        humanoid = char:WaitForChild("Humanoid")
+        task.spawn(function()
+            while humanoid and humanoid.Parent do
+                updateSpeed()
+                updateJump()
+                task.wait(0.1)
+            end
+        end)
+        if godModeEnabled then
+            toggleGodMode(true)
+        end
+    end)
 end)
 
--- Reapply on respawn
-player.CharacterAdded:Connect(function(char)
-	character = char
-	humanoid = char:WaitForChild("Humanoid")
-	if godEnabled then
-		task.wait(0.2)
-		enableGod()
-	end
-end)
+local PlayerTab = Window:MakeTab({Name = "Player", Icon = "rbxassetid://4483345998", PremiumOnly = false})
+
+PlayerTab:AddSlider({Name = "WalkSpeed", Min = 16, Max = 500, Default = 16, Color = Color3.fromRGB(255,140,0), Increment = 1, ValueName = "speed", Callback = function(v) walkSpeedValue = v updateSpeed() end})
+PlayerTab:AddSlider({Name = "JumpPower", Min = 50, Max = 500, Default = 50, Color = Color3.fromRGB(0,170,255), Increment = 1, ValueName = "jump", Callback = function(v) jumpPowerValue = v updateJump() end})
+PlayerTab:AddToggle({Name = "Noclip", Default = false, Callback = function(v) noclipEnabled = v toggleNoclip() end})
+PlayerTab:AddToggle({Name = "God Mode (never die)", Default = false, Callback = function(v) toggleGodMode(v) end})
+PlayerTab:AddToggle({Name = "Ultra Loop (anti-cheat bypass)", Default = false, Callback = function(v)
+    if v then
+        speedLoop = game:GetService("RunService").Heartbeat:Connect(updateSpeed)
+        jumpLoop = game:GetService("RunService").Heartbeat:Connect(updateJump)
+    else
+        if speedLoop then speedLoop:Disconnect() end
+        if jumpLoop then jumpLoop:Disconnect() end
+    end
+end})
+
+local VisualTab = Window:MakeTab({Name = "Visual", Icon = "rbxassetid://7072718362", PremiumOnly = false})
+
+local espEnabled = false
+local espConnections = {}
+
+local function createHighlight(char)
+    if not char or char == player.Character or not char:FindFirstChild("HumanoidRootPart") then return end
+    local old = char:FindFirstChild("AdminESP")
+    if old then old:Destroy() end
+    local hl = Instance.new("Highlight")
+    hl.Name = "AdminESP"
+    hl.FillColor = Color3.fromRGB(255,50,50)
+    hl.OutlineColor = Color3.fromRGB(255,255,0)
+    hl.FillTransparency = 0.5
+    hl.OutlineTransparency = 0
+    hl.Adornee = char
+    hl.Parent = char
+end
+
+VisualTab:AddToggle({Name = "Player Highlights (ESP)", Default = false, Callback = function(v)
+    espEnabled = v
+    if v then
+        for _, p in game.Players:GetPlayers() do
+            if p ~= player and p.Character then createHighlight(p.Character) end
+        end
+        table.insert(espConnections, game.Players.PlayerAdded:Connect(function(p)
+            p.CharacterAdded:Connect(function(c) task.wait(0.6) createHighlight(c) end)
+        end))
+    else
+        for _, c in espConnections do pcall(function() c:Disconnect() end) end
+        espConnections = {}
+        for _, p in game.Players:GetPlayers() do
+            if p.Character then
+                local hl = p.Character:FindFirstChild("AdminESP")
+                if hl then hl:Destroy() end
+            end
+        end
+    end
+end})
+
+VisualTab:AddToggle({Name = "X-Ray (see through walls)", Default = false, Callback = function(v) xrayEnabled = v toggleXRay() end})
+
+VisualTab:AddToggle({Name = "Night Mode (local only)", Default = false, Callback = function(v)
+    local lighting = game.Lighting
+    if v then
+        lighting.Brightness = 0.3
+        lighting.Ambient = Color3.fromRGB(40,40,60)
+        lighting.OutdoorAmbient = Color3.fromRGB(20,20,40)
+        lighting.ClockTime = 0
+        lighting.FogEnd = 300
+        lighting.FogColor = Color3.fromRGB(10,10,30)
+    else
+        lighting.Brightness = 2
+        lighting.Ambient = Color3.fromRGB(180,180,180)
+        lighting.OutdoorAmbient = Color3.fromRGB(128,128,128)
+        lighting.ClockTime = 14
+        lighting.FogEnd = 100000
+    end
+end})
+
+VisualTab:AddButton({Name = "Close Panel", Callback = function() OrionLib:Destroy() end})
+
+OrionLib:MakeNotification({
+    Name = "Admin Panel",
+    Content = "Loaded - WalkSpeed / JumpPower / Noclip / God Mode / Visuals",
+    Image = "rbxassetid://4483345998",
+    Time = 5
+})
