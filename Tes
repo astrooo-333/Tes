@@ -4,7 +4,7 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 -- Create Frame (Draggable)
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 150, 0, 200)
+frame.Size = UDim2.new(0, 130, 0, 210)
 frame.Position = UDim2.new(0, 20, 0, 100)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Active = true
@@ -15,7 +15,7 @@ frame.Parent = gui
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-title.Text = "Teleport GUI"
+title.Text = "Astro"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.Font = Enum.Font.SourceSansBold
 title.TextSize = 20
