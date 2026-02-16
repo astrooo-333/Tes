@@ -1,10 +1,4 @@
---[[
-  costumed teleport gui
-  made by MoonVM
-  scripted by Trechou3
-  UI by unverfied
-  2025 version
-]]
+
 -- Instances: 16 | Scripts: 8 | Modules: 0 | Tags: 0
 local G2L = {};
 
