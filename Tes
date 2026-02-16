@@ -1,0 +1,95 @@
+-- God Mode UI - LocalScript
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- UI
+local gui = Instance.new("ScreenGui")
+gui.Name = "GodModeGUI"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 120)
+frame.Position = UDim2.new(0.05, 0, 0.4, 0)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Parent = gui
+
+local corner = Instance.new("UICorner", frame)
+corner.CornerRadius = UDim.new(0, 12)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "GOD MODE"
+title.TextColor3 = Color3.fromRGB(255, 100, 100)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 18
+title.Parent = frame
+
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0.8, 0, 0, 40)
+button.Position = UDim2.new(0.1, 0, 0.45, 0)
+button.Text = "ENABLE"
+button.Font = Enum.Font.GothamBold
+button.TextSize = 16
+button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Parent = frame
+
+local buttonCorner = Instance.new("UICorner", button)
+buttonCorner.CornerRadius = UDim.new(0, 10)
+
+-- God mode logic
+local godEnabled = false
+local healthConnection
+
+local function enableGod()
+	godEnabled = true
+	button.Text = "DISABLE"
+	button.BackgroundColor3 = Color3.fromRGB(120, 40, 40)
+
+	humanoid.MaxHealth = math.huge
+	humanoid.Health = humanoid.MaxHealth
+
+	healthConnection = humanoid.HealthChanged:Connect(function()
+		if godEnabled then
+			humanoid.Health = humanoid.MaxHealth
+		end
+	end)
+end
+
+local function disableGod()
+	godEnabled = false
+	button.Text = "ENABLE"
+	button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+
+	if healthConnection then
+		healthConnection:Disconnect()
+		healthConnection = nil
+	end
+
+	humanoid.MaxHealth = 100
+	humanoid.Health = 100
+end
+
+button.MouseButton1Click:Connect(function()
+	if godEnabled then
+		disableGod()
+	else
+		enableGod()
+	end
+end)
+
+-- Reapply on respawn
+player.CharacterAdded:Connect(function(char)
+	character = char
+	humanoid = char:WaitForChild("Humanoid")
+	if godEnabled then
+		task.wait(0.2)
+		enableGod()
+	end
+end)
