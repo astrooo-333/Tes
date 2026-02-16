@@ -1,262 +1,479 @@
-local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ionlyusegithubformcmods/1-Line-Scripts/main/Mobile%20Friendly%20Orion"))()
+--[=[
+ d888b  db    db d888888b      .d888b.      db      db    db  .d8b.  
+88' Y8b 88    88   `88'        VP  `8D      88      88    88 d8' `8b 
+88      88    88    88            odD'      88      88    88 88ooo88 
+88  ooo 88    88    88          .88'        88      88    88 88~~~88 
+88. ~8~ 88b  d88   .88.        j88.         88booo. 88b  d88 88   88    @uniquadev
+ Y888P  ~Y8888P' Y888888P      888888D      Y88888P ~Y8888P' YP   YP  CONVERTER 
+]=]
 
-local Window = OrionLib:MakeWindow({
-    Name = "Astro",
-    HidePremium = true,
-    SaveConfig = true,
-    ConfigFolder = "AdminPanel",
-    IntroEnabled = false
-})
+-- Instances: 24 | Scripts: 8 | Modules: 0 | Tags: 0
+local G2L = {};
 
-local player = game.Players.LocalPlayer
-local humanoid = nil
-local walkSpeedValue = 16
-local jumpPowerValue = 50
-local speedLoop, jumpLoop = nil, nil
-local noclipEnabled = false
-local noclipLoop = nil
-local godModeEnabled = false
-local godConnections = {}
-local xrayEnabled = false
-local originalTransparency = {}
+-- StarterGui.ScreenGui
+G2L["1"] = Instance.new("ScreenGui", game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"));
+G2L["1"]["ZIndexBehavior"] = Enum.ZIndexBehavior.Sibling;
 
-local function updateSpeed()
-    if humanoid and humanoid.Parent then
-        humanoid.WalkSpeed = walkSpeedValue
-    end
-end
 
-local function updateJump()
-    if humanoid and humanoid.Parent then
-        humanoid.JumpPower = jumpPowerValue
-        pcall(function()
-            if humanoid:FindFirstChild("JumpHeight") then
-                humanoid.JumpHeight = jumpPowerValue / 2.5
-            end
-        end)
-    end
-end
+-- StarterGui.ScreenGui.Frame
+G2L["2"] = Instance.new("Frame", G2L["1"]);
+G2L["2"]["BorderSizePixel"] = 0;
+G2L["2"]["BackgroundColor3"] = Color3.fromRGB(113, 113, 113);
+G2L["2"]["Size"] = UDim2.new(0, 299, 0, 247);
+G2L["2"]["Position"] = UDim2.new(0.31932, 0, 0.06839, 0);
+G2L["2"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
 
-local function toggleNoclip()
-    if noclipEnabled then
-        noclipLoop = game:GetService("RunService").Heartbeat:Connect(function()
-            if humanoid and player.Character then
-                for _, part in ipairs(player.Character:GetChildren()) do
-                    if part:IsA("BasePart") and part.CanCollide then
-                        part.CanCollide = false
-                    end
-                end
-            end
-        end)
-    else
-        if noclipLoop then
-            noclipLoop:Disconnect()
-            noclipLoop = nil
-        end
-        if player.Character then
-            for _, part in ipairs(player.Character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
-        end
-    end
-end
 
-local function toggleGodMode(value)
-    godModeEnabled = value
-    local char = player.Character
-    if not char then return end
+-- StarterGui.ScreenGui.Frame.TextLabel
+G2L["3"] = Instance.new("TextLabel", G2L["2"]);
+G2L["3"]["TextWrapped"] = true;
+G2L["3"]["BorderSizePixel"] = 0;
+G2L["3"]["TextSize"] = 14;
+G2L["3"]["TextScaled"] = true;
+G2L["3"]["BackgroundColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["3"]["FontFace"] = Font.new([[rbxasset://fonts/families/Bangers.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["3"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3"]["Size"] = UDim2.new(0, 248, 0, 50);
+G2L["3"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["3"]["Text"] = [[Global Panel Admin]];
+G2L["3"]["Position"] = UDim2.new(0.17057, 0, 0, 0);
 
-    humanoid = char:WaitForChild("Humanoid")
 
-    -- Clean previous connections
-    for _, conn in ipairs(godConnections) do
-        pcall(function() conn:Disconnect() end)
-    end
-    godConnections = {}
+-- StarterGui.ScreenGui.Frame.Laugh
+G2L["4"] = Instance.new("TextButton", G2L["2"]);
+G2L["4"]["BorderSizePixel"] = 0;
+G2L["4"]["TextSize"] = 34;
+G2L["4"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 0);
+G2L["4"]["FontFace"] = Font.new([[rbxasset://fonts/families/Bangers.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["4"]["Size"] = UDim2.new(0.54482, 0, 0.25189, 0);
+G2L["4"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["4"]["Text"] = [[Laugh]];
+G2L["4"]["Name"] = [[Laugh]];
+G2L["4"]["Position"] = UDim2.new(0.42949, 0, 0.25325, 0);
 
-    if value then
-        -- Keep health always max
-        humanoid.Health = humanoid.MaxHealth
 
-        -- Health never decreases
-        table.insert(godConnections, humanoid.HealthChanged:Connect(function(health)
-            if health < humanoid.MaxHealth then
-                humanoid.Health = humanoid.MaxHealth
-            end
-        end))
+-- StarterGui.ScreenGui.Frame.Laugh.UIStroke
+G2L["5"] = Instance.new("UIStroke", G2L["4"]);
+G2L["5"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
 
-        -- Block death from any cause
-        table.insert(godConnections, humanoid.Died:Connect(function()
-            task.wait(0.05)
-            humanoid.Health = humanoid.MaxHealth
-            humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-            humanoid:ChangeState(Enum.HumanoidStateType.Running)
-        end))
 
-        -- Block kill bricks / lava / touch damage
-        table.insert(godConnections, char:WaitForChild("HumanoidRootPart").Touched:Connect(function(hit)
-            if hit and (hit.Name:lower():match("kill") or hit.Name:lower():match("death") or hit.Name:lower():match("lava") or hit.Name:lower():match("damage") or hit.Name:lower():match("void")) then
-                humanoid.Health = humanoid.MaxHealth
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    hrp.CFrame = hrp.CFrame + Vector3.new(0, 3, 0)
-                end
-            end
-        end))
+-- StarterGui.ScreenGui.Frame.Laugh.LocalScript
+G2L["6"] = Instance.new("LocalScript", G2L["4"]);
 
-        -- Anti-reset / character remove protection
-        table.insert(godConnections, player.CharacterRemoving:Connect(function()
-            task.wait(0.1)
-            player:LoadCharacter()
-        end))
 
-        -- Block Dead state
-        table.insert(godConnections, humanoid.StateChanged:Connect(function(old, new)
-            if new == Enum.HumanoidStateType.Dead or new == Enum.HumanoidStateType.DeadFallingDown then
-                humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-                humanoid.Health = humanoid.MaxHealth
-            end
-        end))
-    else
-        -- Reset when disabled
-        humanoid.Health = humanoid.MaxHealth
-    end
-end
 
-local function toggleXRay()
-    local ws = game:GetService("Workspace")
-    if xrayEnabled then
-        for _, obj in ipairs(ws:GetDescendants()) do
-            if (obj:IsA("BasePart") or obj:IsA("MeshPart") or obj:IsA("UnionOperation")) and
-               not obj:IsDescendantOf(player.Character) and
-               not game.Players:GetPlayerFromCharacter(obj.Parent) then
-                if not originalTransparency[obj] then
-                    originalTransparency[obj] = obj.Transparency
-                end
-                obj.LocalTransparencyModifier = 0.75
-            end
-        end
-    else
-        for part, trans in pairs(originalTransparency) do
-            if part and part.Parent then
-                part.LocalTransparencyModifier = 0
-            end
-        end
-        originalTransparency = {}
-    end
-end
+-- StarterGui.ScreenGui.Frame.LocalScript
+G2L["7"] = Instance.new("LocalScript", G2L["2"]);
 
--- Initialization
-spawn(function()
-    while not player.Character do task.wait(0.1) end
-    humanoid = player.Character:WaitForChild("Humanoid")
-    
-    task.spawn(function()
-        while humanoid and humanoid.Parent do
-            updateSpeed()
-            updateJump()
-            task.wait(0.1)
-        end
-    end)
-    
-    player.CharacterAdded:Connect(function(char)
-        humanoid = char:WaitForChild("Humanoid")
-        task.spawn(function()
-            while humanoid and humanoid.Parent do
-                updateSpeed()
-                updateJump()
-                task.wait(0.1)
-            end
-        end)
-        if godModeEnabled then
-            toggleGodMode(true)
-        end
-    end)
-end)
 
-local PlayerTab = Window:MakeTab({Name = "Player", Icon = "rbxassetid://4483345998", PremiumOnly = false})
 
-PlayerTab:AddSlider({Name = "WalkSpeed", Min = 16, Max = 500, Default = 16, Color = Color3.fromRGB(255,140,0), Increment = 1, ValueName = "speed", Callback = function(v) walkSpeedValue = v updateSpeed() end})
-PlayerTab:AddSlider({Name = "JumpPower", Min = 50, Max = 500, Default = 50, Color = Color3.fromRGB(0,170,255), Increment = 1, ValueName = "jump", Callback = function(v) jumpPowerValue = v updateJump() end})
-PlayerTab:AddToggle({Name = "Noclip", Default = false, Callback = function(v) noclipEnabled = v toggleNoclip() end})
-PlayerTab:AddToggle({Name = "God Mode", Default = false, Callback = function(v) toggleGodMode(v) end})
-PlayerTab:AddToggle({Name = "Ultra Loop (anti-cheat bypass)", Default = false, Callback = function(v)
-    if v then
-        speedLoop = game:GetService("RunService").Heartbeat:Connect(updateSpeed)
-        jumpLoop = game:GetService("RunService").Heartbeat:Connect(updateJump)
-    else
-        if speedLoop then speedLoop:Disconnect() end
-        if jumpLoop then jumpLoop:Disconnect() end
-    end
-end})
+-- StarterGui.ScreenGui.Frame.LocalScript
+G2L["8"] = Instance.new("LocalScript", G2L["2"]);
 
-local VisualTab = Window:MakeTab({Name = "Visual", Icon = "rbxassetid://7072718362", PremiumOnly = false})
 
-local espEnabled = false
-local espConnections = {}
 
-local function createHighlight(char)
-    if not char or char == player.Character or not char:FindFirstChild("HumanoidRootPart") then return end
-    local old = char:FindFirstChild("AdminESP")
-    if old then old:Destroy() end
-    local hl = Instance.new("Highlight")
-    hl.Name = "AdminESP"
-    hl.FillColor = Color3.fromRGB(255,50,50)
-    hl.OutlineColor = Color3.fromRGB(255,255,0)
-    hl.FillTransparency = 0.5
-    hl.OutlineTransparency = 0
-    hl.Adornee = char
-    hl.Parent = char
-end
+-- StarterGui.ScreenGui.Frame.TextLabel1
+G2L["9"] = Instance.new("TextLabel", G2L["2"]);
+G2L["9"]["TextWrapped"] = true;
+G2L["9"]["BorderSizePixel"] = 0;
+G2L["9"]["TextSize"] = 14;
+G2L["9"]["TextScaled"] = true;
+G2L["9"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["9"]["FontFace"] = Font.new([[rbxasset://fonts/families/Bangers.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["9"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["Size"] = UDim2.new(0, 299, 0, 41);
+G2L["9"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["9"]["Text"] = [[2002 Creator Studio Global Hack]];
+G2L["9"]["Name"] = [[TextLabel1]];
+G2L["9"]["Position"] = UDim2.new(0, 0, 0.95951, 0);
 
-VisualTab:AddToggle({Name = "Player Highlights (ESP)", Default = false, Callback = function(v)
-    espEnabled = v
-    if v then
-        for _, p in game.Players:GetPlayers() do
-            if p ~= player and p.Character then createHighlight(p.Character) end
-        end
-        table.insert(espConnections, game.Players.PlayerAdded:Connect(function(p)
-            p.CharacterAdded:Connect(function(c) task.wait(0.6) createHighlight(c) end)
-        end))
-    else
-        for _, c in espConnections do pcall(function() c:Disconnect() end) end
-        espConnections = {}
-        for _, p in game.Players:GetPlayers() do
-            if p.Character then
-                local hl = p.Character:FindFirstChild("AdminESP")
-                if hl then hl:Destroy() end
-            end
-        end
-    end
-end})
 
-VisualTab:AddToggle({Name = "X-Ray (see through walls)", Default = false, Callback = function(v) xrayEnabled = v toggleXRay() end})
+-- StarterGui.ScreenGui.Frame.TextLabel1.UIStroke1
+G2L["a"] = Instance.new("UIStroke", G2L["9"]);
+G2L["a"]["ApplyStrokeMode"] = Enum.ApplyStrokeMode.Border;
+G2L["a"]["Name"] = [[UIStroke1]];
 
-VisualTab:AddToggle({Name = "Night Mode (local only)", Default = false, Callback = function(v)
-    local lighting = game.Lighting
-    if v then
-        lighting.Brightness = 0.3
-        lighting.Ambient = Color3.fromRGB(40,40,60)
-        lighting.OutdoorAmbient = Color3.fromRGB(20,20,40)
-        lighting.ClockTime = 0
-        lighting.FogEnd = 300
-        lighting.FogColor = Color3.fromRGB(10,10,30)
-    else
-        lighting.Brightness = 2
-        lighting.Ambient = Color3.fromRGB(180,180,180)
-        lighting.OutdoorAmbient = Color3.fromRGB(128,128,128)
-        lighting.ClockTime = 14
-        lighting.FogEnd = 100000
-    end
-end})
 
-VisualTab:AddButton({Name = "Close Panel", Callback = function() OrionLib:Destroy() end})
+-- StarterGui.ScreenGui.Frame.TextButton
+G2L["b"] = Instance.new("TextButton", G2L["2"]);
+G2L["b"]["TextWrapped"] = true;
+G2L["b"]["BorderSizePixel"] = 0;
+G2L["b"]["TextSize"] = 34;
+G2L["b"]["TextScaled"] = true;
+G2L["b"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["b"]["BackgroundColor3"] = Color3.fromRGB(255, 0, 69);
+G2L["b"]["FontFace"] = Font.new([[rbxasset://fonts/families/FredokaOne.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["b"]["Size"] = UDim2.new(0.35172, 0, 0.34939, 0);
+G2L["b"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["b"]["Text"] = [[Kick all]];
+G2L["b"]["Position"] = UDim2.new(0.03429, 0, 0.55129, 0);
 
-OrionLib:MakeNotification({
-    Name = "Astro",
-    Content = "Loaded - WalkSpeed / JumpPower / Noclip / God Mode / Visuals",
-    Image = "rbxassetid://4483345998",
-    Time = 5
-})
+
+-- StarterGui.ScreenGui.Frame.TextButton.LocalScript
+G2L["c"] = Instance.new("LocalScript", G2L["b"]);
+
+
+
+-- StarterGui.ScreenGui.Frame.FlyButton
+G2L["d"] = Instance.new("TextButton", G2L["2"]);
+G2L["d"]["TextWrapped"] = true;
+G2L["d"]["TextSize"] = 34;
+G2L["d"]["TextScaled"] = true;
+G2L["d"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["d"]["BackgroundColor3"] = Color3.fromRGB(84, 255, 21);
+G2L["d"]["FontFace"] = Font.new([[rbxasset://fonts/families/FredokaOne.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["d"]["Size"] = UDim2.new(0.16151, 0, 0.3063, 0);
+G2L["d"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["d"]["Text"] = [[Fly]];
+G2L["d"]["Name"] = [[FlyButton]];
+G2L["d"]["Position"] = UDim2.new(0.42819, 0, 0.54986, 0);
+
+
+-- StarterGui.ScreenGui.Frame.FlyButton.FlyButtonScript
+G2L["e"] = Instance.new("LocalScript", G2L["d"]);
+G2L["e"]["Name"] = [[FlyButtonScript]];
+
+
+-- StarterGui.ScreenGui.Frame.ImageLabel
+G2L["f"] = Instance.new("ImageLabel", G2L["2"]);
+G2L["f"]["BorderSizePixel"] = 0;
+G2L["f"]["BackgroundColor3"] = Color3.fromRGB(86, 171, 255);
+G2L["f"]["Image"] = [[rbxassetid://8046472186]];
+G2L["f"]["Size"] = UDim2.new(0, 51, 0, 50);
+G2L["f"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+
+
+-- StarterGui.ScreenGui.Frame.DecalSpam
+G2L["10"] = Instance.new("TextButton", G2L["2"]);
+G2L["10"]["TextSize"] = 38;
+G2L["10"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["10"]["BackgroundColor3"] = Color3.fromRGB(255, 0, 0);
+G2L["10"]["FontFace"] = Font.new([[rbxasset://fonts/families/Kalam.json]], Enum.FontWeight.Regular, Enum.FontStyle.Normal);
+G2L["10"]["Size"] = UDim2.new(0.35288, 0, 0.2524, 0);
+G2L["10"]["BorderColor3"] = Color3.fromRGB(28, 43, 54);
+G2L["10"]["Text"] = [[DecalSpam]];
+G2L["10"]["Name"] = [[DecalSpam]];
+G2L["10"]["Position"] = UDim2.new(0.03314, 0, 0.25274, 0);
+
+
+-- StarterGui.ScreenGui.Frame.DecalSpam.Script
+G2L["11"] = Instance.new("Script", G2L["10"]);
+
+
+
+-- StarterGui.ScreenGui.Frame.KillAllButton
+G2L["12"] = Instance.new("TextButton", G2L["2"]);
+G2L["12"]["TextWrapped"] = true;
+G2L["12"]["BorderSizePixel"] = 0;
+G2L["12"]["TextSize"] = 31;
+G2L["12"]["TextScaled"] = true;
+G2L["12"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["BackgroundColor3"] = Color3.fromRGB(255, 0, 0);
+G2L["12"]["FontFace"] = Font.new([[rbxasset://fonts/families/Bangers.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["12"]["Size"] = UDim2.new(0, 100, 0, 45);
+G2L["12"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["12"]["Text"] = [[Kill all]];
+G2L["12"]["Name"] = [[KillAllButton]];
+G2L["12"]["Position"] = UDim2.new(0.63652, 0, 0.54986, 0);
+
+
+-- StarterGui.ScreenGui.Frame.KillAllButton.LocalScript
+G2L["13"] = Instance.new("LocalScript", G2L["12"]);
+
+
+
+-- StarterGui.ScreenGui.Frame.KillAllButton1
+G2L["14"] = Instance.new("TextButton", G2L["2"]);
+G2L["14"]["TextWrapped"] = true;
+G2L["14"]["BorderSizePixel"] = 0;
+G2L["14"]["TextSize"] = 31;
+G2L["14"]["TextScaled"] = true;
+G2L["14"]["TextColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["BackgroundColor3"] = Color3.fromRGB(171, 171, 0);
+G2L["14"]["FontFace"] = Font.new([[rbxasset://fonts/families/Bangers.json]], Enum.FontWeight.Bold, Enum.FontStyle.Normal);
+G2L["14"]["Size"] = UDim2.new(0, 94, 0, 42);
+G2L["14"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["14"]["Text"] = [[Kill all Admin]];
+G2L["14"]["Name"] = [[KillAllButton1]];
+G2L["14"]["Position"] = UDim2.new(0.63652, 0, 0.77253, 0);
+
+
+-- StarterGui.ScreenGui.Frame.KillAllButton1.LocalScript
+G2L["15"] = Instance.new("LocalScript", G2L["14"]);
+
+
+
+-- StarterGui.ScreenGui.Global Open
+G2L["16"] = Instance.new("ImageButton", G2L["1"]);
+G2L["16"]["BorderSizePixel"] = 0;
+G2L["16"]["BackgroundTransparency"] = 1;
+G2L["16"]["BackgroundColor3"] = Color3.fromRGB(255, 255, 255);
+G2L["16"]["Image"] = [[rbxassetid://8046472186]];
+G2L["16"]["Size"] = UDim2.new(0, 100, 0, 100);
+G2L["16"]["BorderColor3"] = Color3.fromRGB(0, 0, 0);
+G2L["16"]["Name"] = [[Global Open]];
+G2L["16"]["Position"] = UDim2.new(-0.00021, 0, 0.29289, 0);
+
+
+-- StarterGui.ScreenGui.Global Open.UICorner
+G2L["17"] = Instance.new("UICorner", G2L["16"]);
+G2L["17"]["CornerRadius"] = UDim.new(0.2, 0);
+
+
+-- StarterGui.ScreenGui.Global Open.LocalScript
+G2L["18"] = Instance.new("LocalScript", G2L["16"]);
+
+
+
+-- StarterGui.ScreenGui.Frame.Laugh.LocalScript
+local function C_6()
+local script = G2L["6"];
+	local button = script.Parent
+	local Workspace = game:GetService("Workspace")
+	local SoundId = "rbxassetid://6329686363"  -- Replace with the actual sound asset ID
+	
+	local isSoundPlaying = false  -- Track whether the sound is currently playing
+	
+	local function playSound()
+		if isSoundPlaying then
+			print("Sound is already playing!")
+			return
+		end
+	
+		local sound = Instance.new("Sound")
+		sound.SoundId = SoundId
+		sound.PlaybackSpeed = 1
+		sound.Looped = false
+		sound.Parent = Workspace
+		sound.Volume = 10
+	
+		sound:Play()
+	
+		isSoundPlaying = true  -- Update the flag to indicate that the sound is now playing
+		sound.Ended:Connect(function()
+			isSoundPlaying = false  -- Reset the flag when the sound finishes playing
+		end)
+	end
+	
+	button.MouseButton1Click:Connect(playSound)
+	
+end;
+task.spawn(C_6);
+-- StarterGui.ScreenGui.Frame.LocalScript
+local function C_7()
+local script = G2L["7"];
+	--[[ Made by coolcapidog
+	Channel ->> https://www.youtube.com/c/coolcapidog
+	]]
+	local ProductId = 0
+	
+	local Player = game.Players.LocalPlayer
+	local MarketplaceService = game:GetService("MarketplaceService")
+	script.Parent.KillAllButton.MouseButton1Click:Connect(function()
+		MarketplaceService:PromptProductPurchase(Player, ProductId)
+	end)
+end;
+task.spawn(C_7);
+-- StarterGui.ScreenGui.Frame.LocalScript
+local function C_8()
+local script = G2L["8"];
+	local UIS = game:GetService('UserInputService')
+	local frame = script.Parent
+	local dragToggle = nil
+	local dragSpeed = 0.25
+	local dragStart = nil
+	local startPos = nil
+	
+	
+	local function updateInput(input)
+		local delta = input.Position - dragStart
+		local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+			startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+		game:GetService('TweenService'):Create(frame, TweenInfo.new(dragSpeed), {Position = position}):Play()
+	end
+	
+	frame.InputBegan:Connect(function(input)
+		if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then 
+			dragToggle = true
+			dragStart = input.Position
+			startPos = frame.Position
+			input.Changed:Connect(function()
+				if input.UserInputState == Enum.UserInputState.End then
+					dragToggle = false
+				end
+			end)
+		end
+	end)
+	
+	UIS.InputChanged:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+			if dragToggle then
+				updateInput(input)
+			end
+		end
+	end)
+	
+	
+end;
+task.spawn(C_8);
+-- StarterGui.ScreenGui.Frame.TextButton.LocalScript
+local function C_c()
+local script = G2L["c"];
+	script.Parent.MouseButton1Click:Connect(function()
+		game.Players.LocalPlayer:Kick("HAAHAHAHAHH I'M HACKER IN c00lkidd IN Tubers93!")
+	end)
+end;
+task.spawn(C_c);
+-- StarterGui.ScreenGui.Frame.FlyButton.FlyButtonScript
+local function C_e()
+local script = G2L["e"];
+	local isFlying = false
+	local camera = workspace.CurrentCamera
+	local char = game.Players.LocalPlayer.Character
+	local hrp = char:WaitForChild("HumanoidRootPart")
+	
+	local bodyPos = Instance.new("BodyPosition")
+	bodyPos.MaxForce = Vector3.new()
+	bodyPos.D = 100
+	bodyPos.P = 1000
+	bodyPos.Parent = hrp
+	
+	local bodyGyro = Instance.new("BodyGyro")
+	bodyGyro.MaxTorque = Vector3.new()
+	bodyGyro.D = 10
+	bodyGyro.Parent = hrp
+	
+	script.Parent.MouseButton1Click:Connect(function()
+		isFlying = not isFlying
+	end)
+	
+	script.Parent.MouseButton2Click:Connect(function()
+		isFlying = false
+	end)
+	
+	game:GetService("RunService").RenderStepped:Connect(function()
+		if isFlying then
+			bodyPos.MaxForce = Vector3.new(math.huge, math.huge,math)
+			bodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+			bodyPos.Position = hrp.Position +((hrp.Position - camera.CFrame.Position).Unit * 10)
+			bodyGyro.CFrame = CFrame.new(camera.CFrame.Position, hrp.Position)
+		else
+			bodyPos.MaxForce = Vector3.new()
+			bodyGyro.MaxTorque = Vector3.new()
+		end
+	end)
+end;
+task.spawn(C_e);
+-- StarterGui.ScreenGui.Frame.KillAllButton.LocalScript
+local function C_13()
+local script = G2L["13"];
+	local ADMIN = "TestGamerForYT" -- seu nome de Roblox
+	local botao = script.Parent
+	local clickDetector = botao:WaitForChild("ClickDetector")
+	
+	clickDetector.MouseClick:Connect(function(player)
+		-- sÃ³ o admin pode usar
+		if player.Name ~= ADMIN then
+			print(player.Name .. " tentou apertar o botÃ£o, mas nÃ£o Ã© admin!")
+			return
+		end
+	
+		print("ALL KILL ativado pelo admin: "..player.Name)
+	
+		-- efeito de tela vermelha para todos
+		for _, plr in ipairs(game.Players:GetPlayers()) do
+			if plr:FindFirstChild("PlayerGui") then
+				local flash = Instance.new("ScreenGui", plr.PlayerGui)
+				flash.Name = "KillFlash"
+	
+				local frame = Instance.new("Frame", flash)
+				frame.Size = UDim2.new(1,0,1,0)
+				frame.BackgroundColor3 = Color3.fromRGB(255,0,0)
+				frame.BackgroundTransparency = 0.5
+	
+				game:GetService("Debris"):AddItem(flash, 0.5)
+			end
+		end
+	
+		-- explosÃ£o visual no botÃ£o
+		local explosion = Instance.new("Explosion")
+		explosion.BlastPressure = 0
+		explosion.BlastRadius = 10
+		explosion.Position = botao.Position + Vector3.new(0,5,0)
+		explosion.Parent = workspace
+	
+		-- mata todos
+		for _, plr in ipairs(game.Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+				plr.Character.Humanoid.Health = 0
+			end
+		end
+	end)
+	
+end;
+task.spawn(C_13);
+-- StarterGui.ScreenGui.Frame.KillAllButton1.LocalScript
+local function C_15()
+local script = G2L["15"];
+	local ADMIN = "TestGamerForYT" -- seu nome de Roblox
+	local botao = script.Parent
+	local clickDetector = botao:WaitForChild("ClickDetector")
+	
+	clickDetector.MouseClick:Connect(function(player)
+		-- sÃ³ o admin pode usar
+		if player.Name ~= ADMIN then
+			print(player.Name .. " tentou apertar o botÃ£o, mas nÃ£o Ã© admin!")
+			return
+		end
+	
+		print("ALL KILL ativado pelo admin: "..player.Name)
+	
+		-- efeito de tela vermelha para todos
+		for _, plr in ipairs(game.Players:GetPlayers()) do
+			if plr:FindFirstChild("PlayerGui") then
+				local flash = Instance.new("ScreenGui", plr.PlayerGui)
+				flash.Name = "KillFlash"
+	
+				local frame = Instance.new("Frame", flash)
+				frame.Size = UDim2.new(1,0,1,0)
+				frame.BackgroundColor3 = Color3.fromRGB(255,0,0)
+				frame.BackgroundTransparency = 0.5
+	
+				game:GetService("Debris"):AddItem(flash, 0.5)
+			end
+		end
+	
+		-- explosÃ£o visual no botÃ£o
+		local explosion = Instance.new("Explosion")
+		explosion.BlastPressure = 0
+		explosion.BlastRadius = 10
+		explosion.Position = botao.Position + Vector3.new(0,5,0)
+		explosion.Parent = workspace
+	
+		-- mata todos
+		for _, plr in ipairs(game.Players:GetPlayers()) do
+			if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+				plr.Character.Humanoid.Health = 0
+			end
+		end
+	end)
+	
+end;
+task.spawn(C_15);
+-- StarterGui.ScreenGui.Global Open.LocalScript
+local function C_18()
+local script = G2L["18"];
+	script.Parent.MouseButton1Click:connect(function()
+	    if script.Parent.Parent.Frame.Visible == false then
+	        script.Parent.Parent.Frame.Visible = true
+		    script.Parent.Text = 'Close'
+		
+		else
+	        script.Parent.Parent.Frame.Visible = false
+	end     script.Parent.Text = 'Open'
+	 end)
+end;
+task.spawn(C_18);
+
+return G2L["1"], require;
