@@ -1,323 +1,129 @@
---[[
-  â•¦â•â•—â•”â•â•—â•”â•â•—â•”â•â•—â•”â•â•—â•”â•¦â•—  â•”â•¦â•—â•”â•â•—â•”â•—â•”â•”â•¦â•—
-  â• â•¦â•â•‘â•£ â•šâ•â•—â•šâ•â•—â•‘â•£  â•‘â•‘   â•‘â•‘â•‘ â•‘â•‘â•‘â•‘ â•‘â•‘
-  â•©â•šâ•â•šâ•â•â•šâ•â•â•šâ•â•â•šâ•â•â•â•©â•  â•â•©â•â•šâ•â•â•â•šâ•â•â•©â•
-  REAPER'S MOD MENU v11.0 (FINAL ASCENSION)
-  THE LAST MENU YOU WILL EVER NEED.
-]]--
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
---== NUCLEAR INJECTION (NO FAILURE) ==--
-if not game:IsLoaded() then game.Loaded:Wait() end
-local function ForceInject()
-    if not getgenv().ReaperLoaded then
-        getgenv().ReaperLoaded = true
-        for _, v in pairs(game:GetService("CoreGui"):GetChildren()) do
-            if v:IsA("ScreenGui") and (v.Name == "ReaperRoot" or v.Name:find("Exploit")) then
-                v:Destroy()
-            end
+-- Wait a moment to ensure StarterGui is ready
+task.wait(1)
+
+-- Safely send purple chat message
+local StarterGui = game:GetService("StarterGui")
+pcall(function()
+    StarterGui:SetCore("ChatMakeSystemMessage", {
+        Text = "Thanks for using script! Credit ThatBoiledOne on YT if you wanna showcase. Have fun!";
+        Color = Color3.fromRGB(170, 0, 255); -- Purple color
+        Font = Enum.Font.SourceSansBold;
+        TextSize = 18;
+    })
+end)
+
+-- Create GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.CoreGui
+ScreenGui.Name = "TPGui"
+
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 450, 0, 350)
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -175)
+MainFrame.BackgroundColor3 = Color3.fromRGB(245, 245, 245)
+MainFrame.BorderSizePixel = 0
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.ClipsDescendants = true
+MainFrame.BackgroundTransparency = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Name = "MainFrame"
+
+local UICorner = Instance.new("UICorner", MainFrame)
+UICorner.CornerRadius = UDim.new(0, 12)
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Text = "ðŸš€ TP GUI v1"
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Font = Enum.Font.GothamBold
+Title.TextScaled = true
+
+local PlayerListFrame = Instance.new("ScrollingFrame", MainFrame)
+PlayerListFrame.Size = UDim2.new(0.9, 0, 0.6, 0)
+PlayerListFrame.Position = UDim2.new(0.05, 0, 0.18, 0)
+PlayerListFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+PlayerListFrame.BorderSizePixel = 0
+PlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+PlayerListFrame.ScrollBarThickness = 8
+
+local UICorner2 = Instance.new("UICorner", PlayerListFrame)
+UICorner2.CornerRadius = UDim.new(0, 8)
+
+local UIListLayout = Instance.new("UIListLayout", PlayerListFrame)
+UIListLayout.FillDirection = Enum.FillDirection.Vertical
+UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+UIListLayout.Padding = UDim.new(0, 5)
+
+local TeleportButton = Instance.new("TextButton", MainFrame)
+TeleportButton.Size = UDim2.new(0.8, 0, 0.1, 0)
+TeleportButton.Position = UDim2.new(0.1, 0, 0.85, 0)
+TeleportButton.Text = "Teleport to Selected Player"
+TeleportButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+TeleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportButton.Font = Enum.Font.GothamSemibold
+TeleportButton.TextScaled = true
+
+local UICorner3 = Instance.new("UICorner", TeleportButton)
+UICorner3.CornerRadius = UDim.new(0, 8)
+
+local SelectedPlayer = nil
+
+-- Populate player list
+local function RefreshPlayerList()
+    for _, child in ipairs(PlayerListFrame:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
         end
     end
-end
-ForceInject()
 
---== GUI CREATION (DARK DOMINION THEME) ==--
-local ReaperRoot = Instance.new("ScreenGui")
-ReaperRoot.Name = "ReaperRoot"
-ReaperRoot.ZIndexBehavior = Enum.ZIndexBehavior.Global
-ReaperRoot.ResetOnSpawn = false
-ReaperRoot.Parent = game:GetService("CoreGui")
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local PlayerButton = Instance.new("TextButton", PlayerListFrame)
+            PlayerButton.Size = UDim2.new(1, -10, 0, 40)
+            PlayerButton.Text = player.Name
+            PlayerButton.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+            PlayerButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+            PlayerButton.Font = Enum.Font.Gotham
+            PlayerButton.TextScaled = true
+            PlayerButton.BorderSizePixel = 0
 
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 500, 0, 650)
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -325)
-MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-MainFrame.BorderColor3 = Color3.fromRGB(255, 0, 0)
-MainFrame.BorderSizePixel = 2
-MainFrame.Parent = ReaperRoot
+            local btnCorner = Instance.new("UICorner", PlayerButton)
+            btnCorner.CornerRadius = UDim.new(0, 6)
 
--- TITLE (BLOOD-RED GLOW)
-local Title = Instance.new("TextLabel")
-Title.Text = "REAPER'S MOD MENU v11.0"
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Title.TextColor3 = Color3.fromRGB(255, 0, 0)
-Title.Font = Enum.Font.GothamBlack
-Title.TextSize = 20
-Title.Parent = MainFrame
-
--- CLOSE GUI BUTTON (SELF-DESTRUCT)
-local CloseButton = Instance.new("TextButton")
-CloseButton.Text = "X"
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.TextSize = 18
-CloseButton.Parent = MainFrame
-CloseButton.MouseButton1Click:Connect(function()
-    ReaperRoot:Destroy()
-    getgenv().ReaperLoaded = false
-end)
-
--- TABS (DESTRUCTION CATEGORIES)
-local Tabs = {"PLAYER", "COMBAT", "WORLD", "VOICE", "DEX", "SCRIPTS"}
-local TabFrames = {}
-
-for i, tab in pairs(Tabs) do
-    local TabButton = Instance.new("TextButton")
-    TabButton.Text = tab
-    TabButton.Size = UDim2.new(0.166, -5, 0, 30)
-    TabButton.Position = UDim2.new(0.166 * (i-1), 5, 0, 45)
-    TabButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    TabButton.TextColor3 = Color3.fromRGB(255, 50, 50)
-    TabButton.Font = Enum.Font.GothamBold
-    TabButton.Parent = MainFrame
-
-    local TabFrame = Instance.new("ScrollingFrame")
-    TabFrame.Size = UDim2.new(1, -10, 1, -100)
-    TabFrame.Position = UDim2.new(0, 5, 0, 80)
-    TabFrame.BackgroundTransparency = 1
-    TabFrame.Visible = (i == 1)
-    TabFrame.Parent = MainFrame
-    TabFrames[tab] = TabFrame
-
-    TabButton.MouseButton1Click:Connect(function()
-        for _, frame in pairs(TabFrames) do frame.Visible = false end
-        TabFrame.Visible = true
-    end)
-end
-
---== MODULES ==--
-
--- 1. PLAYER HACKS (GOD MODE, SPEED, FLY, ETC.)
-local function AddPlayerHacks()
-    local Frame = TabFrames["PLAYER"]
-    local function CreateButton(text, y, action)
-        local Button = Instance.new("TextButton")
-        Button.Text = text
-        Button.Size = UDim2.new(1, -10, 0, 30)
-        Button.Position = UDim2.new(0, 5, 0, y)
-        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        Button.TextColor3 = Color3.fromRGB(255, 100, 100)
-        Button.Font = Enum.Font.Code
-        Button.Parent = Frame
-        Button.MouseButton1Click:Connect(action)
-        return Button
+            PlayerButton.MouseButton1Click:Connect(function()
+                -- Unhighlight others
+                for _, other in ipairs(PlayerListFrame:GetChildren()) do
+                    if other:IsA("TextButton") then
+                        other.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+                    end
+                end
+                PlayerButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                SelectedPlayer = player
+            end)
+        end
     end
 
-    CreateButton("GOD MODE (NO DAMAGE)", 10, function()
-        game.Players.LocalPlayer.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
-    end)
-
-    CreateButton("SPEED HACK (100 WALKSPSD)", 50, function()
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
-    end)
-
-    CreateButton("INFINITE JUMP", 90, function()
-        local InfiniteJump = true
-        game:GetService("UserInputService").JumpRequest:Connect(function()
-            if InfiniteJump then
-                game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-            end
-        end)
-    end)
-
-    CreateButton("NO CLIP (GHOST MODE)", 130, function()
-        local Noclip = true
-        game:GetService("RunService").Stepped:Connect(function()
-            if Noclip then
-                game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(11)
-            end
-        end)
-    end)
+    -- Update scroll size
+    task.wait(0.1)
+    PlayerListFrame.CanvasSize = UDim2.new(0, 0, 0, UIListLayout.AbsoluteContentSize.Y + 10)
 end
 
--- 2. COMBAT HACKS (AIMBOT, SILENT AIM, ETC.)
-local function AddCombatHacks()
-    local Frame = TabFrames["COMBAT"]
-    local function CreateButton(text, y, action)
-        local Button = Instance.new("TextButton")
-        Button.Text = text
-        Button.Size = UDim2.new(1, -10, 0, 30)
-        Button.Position = UDim2.new(0, 5, 0, y)
-        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        Button.TextColor3 = Color3.fromRGB(255, 100, 100)
-        Button.Font = Enum.Font.Code
-        Button.Parent = Frame
-        Button.MouseButton1Click:Connect(action)
-        return Button
-    end
+RefreshPlayerList()
 
-    CreateButton("AIMBOT (LOCK ON HEAD)", 10, function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ReaperMOD/Astral/main/Aimbot.lua"))()
-    end)
+Players.PlayerAdded:Connect(RefreshPlayerList)
+Players.PlayerRemoving:Connect(RefreshPlayerList)
 
-    CreateButton("SILENT AIM (HIT ANYWHERE)", 50, function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ReaperMOD/Astral/main/SilentAim.lua"))()
-    end)
-
-    CreateButton("TRACER BULLETS (VISUAL)", 90, function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ReaperMOD/Astral/main/Tracers.lua"))()
-    end)
-
-    CreateButton("INSTANT KILL (ONE SHOT)", 130, function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ReaperMOD/Astral/main/InstantKill.lua"))()
-    end)
-end
-
--- 3. WORLD HACKS (GRAVITY, TIME, ETC.)
-local function AddWorldHacks()
-    local Frame = TabFrames["WORLD"]
-    local function CreateButton(text, y, action)
-        local Button = Instance.new("TextButton")
-        Button.Text = text
-        Button.Size = UDim2.new(1, -10, 0, 30)
-        Button.Position = UDim2.new(0, 5, 0, y)
-        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        Button.TextColor3 = Color3.fromRGB(255, 100, 100)
-        Button.Font = Enum.Font.Code
-        Button.Parent = Frame
-        Button.MouseButton1Click:Connect(action)
-        return Button
-    end
-
-    CreateButton("NO GRAVITY (FLOAT MODE)", 10, function()
-        workspace.Gravity = 0
-    end)
-
-    CreateButton("TIME STOP (FREEZE GAME)", 50, function()
-        game:GetService("RunService"):Set3dRenderingEnabled(false)
-    end)
-
-    CreateButton("FULLBRIGHT (NO DARKNESS)", 90, function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ReaperMOD/Astral/main/Fullbright.lua"))()
-    end)
-
-    CreateButton("FOG REMOVER (CLEAR VIEW)", 130, function()
-        game:GetService("Lighting").FogEnd = 100000
-    end)
-end
-
--- 4. VOICE HACKS (MIC CONTROL)
-local function AddVoiceHacks()
-    local Frame = TabFrames["VOICE"]
-    local function CreateButton(text, y, action)
-        local Button = Instance.new("TextButton")
-        Button.Text = text
-        Button.Size = UDim2.new(1, -10, 0, 30)
-        Button.Position = UDim2.new(0, 5, 0, y)
-        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-        Button.TextColor3 = Color3.fromRGB(255, 100, 100)
-        Button.Font = Enum.Font.Code
-        Button.Parent = Frame
-        Button.MouseButton1Click:Connect(action)
-        return Button
-    end
-
-    CreateButton("FORCE ENABLE VOICE", 10, function()
-        game:GetService("VoiceService"):SetVoiceEnabled(true)
-    end)
-
-    CreateButton("LOOP VOICE SPAM", 50, function()
-        -- (Advanced exploits would require memory hacking)
-    end)
-
-    CreateButton("VOICE CHAT CRASHER", 90, function()
-        -- (Theoretical: Packet injection)
-    end)
-end
-
--- 5. DEX EXPLORER (MEMORY HACKING)
-local function AddDexExplorer()
-    local Frame = TabFrames["DEX"]
-    local Output = Instance.new("TextLabel")
-    Output.Text = "DEX OUTPUT WILL APPEAR HERE"
-    Output.Size = UDim2.new(1, -10, 1, -10)
-    Output.Position = UDim2.new(0, 5, 0, 5)
-    Output.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Output.TextColor3 = Color3.fromRGB(0, 255, 0)
-    Output.Font = Enum.Font.Code
-    Output.TextSize = 12
-    Output.TextXAlignment = Enum.TextXAlignment.Left
-    Output.TextYAlignment = Enum.TextYAlignment.Top
-    Output.TextWrapped = true
-    Output.Parent = Frame
-
-    local Button = Instance.new("TextButton")
-    Button.Text = "LOAD DEX EXPLORER"
-    Button.Size = UDim2.new(1, -10, 0, 30)
-    Button.Position = UDim2.new(0, 5, 0, 5)
-    Button.Parent = Frame
-    Button.MouseButton1Click:Connect(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()
-    end)
-end
-
--- 6. SCRIPT LOADER (CUSTOM SCRIPTS)
-local function AddScriptLoader()
-    local Frame = TabFrames["SCRIPTS"]
-    local TextBox = Instance.new("TextBox")
-    TextBox.PlaceholderText = "Paste script URL here..."
-    TextBox.Size = UDim2.new(1, -10, 0, 30)
-    TextBox.Position = UDim2.new(0, 5, 0, 10)
-    TextBox.Parent = Frame
-
-    local Button = Instance.new("TextButton")
-    Button.Text = "LOAD SCRIPT"
-    Button.Size = UDim2.new(1, -10, 0, 30)
-    Button.Position = UDim2.new(0, 5, 0, 50)
-    Button.Parent = Frame
-    Button.MouseButton1Click:Connect(function()
-        loadstring(game:HttpGet(TextBox.Text))()
-    end)
-end
-
--- INITIALIZE ALL MODULES
-AddPlayerHacks()
-AddCombatHacks()
-AddWorldHacks()
-AddVoiceHacks()
-AddDexExplorer()
-AddScriptLoader()
-
--- PERSISTENCE (SURVIVES TELEPORT)
-game:GetService("Players").LocalPlayer.OnTeleport:Connect(function(state)
-    if state == Enum.TeleportState.Started then
-        syn.queue_on_teleport([[
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/ReaperMOD/Astral/main/ReaperFinal.lua"))()
-        ]])
-    end
-end)
-
--- MAKE GUI DRAGGABLE
-local UserInputService = game:GetService("UserInputService")
-local dragging, dragInput, dragStart, startPos
-
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        dragging = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-            end
-        end)
-    end
-end)
-
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-        dragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input == dragInput then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+TeleportButton.MouseButton1Click:Connect(function()
+    if SelectedPlayer and SelectedPlayer.Character and SelectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local root = char:FindFirstChild("HumanoidRootPart")
+        if root then
+            root.CFrame = SelectedPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(2, 0, 2)
+        end
     end
 end)
