@@ -1,7 +1,7 @@
 local OrionLib = loadstring(game:HttpGet("https://raw.githubusercontent.com/ionlyusegithubformcmods/1-Line-Scripts/main/Mobile%20Friendly%20Orion"))()
 
 local Window = OrionLib:MakeWindow({
-    Name = "Admin Panel",
+    Name = "Astro",
     HidePremium = true,
     SaveConfig = true,
     ConfigFolder = "AdminPanel",
@@ -181,7 +181,7 @@ local PlayerTab = Window:MakeTab({Name = "Player", Icon = "rbxassetid://44833459
 PlayerTab:AddSlider({Name = "WalkSpeed", Min = 16, Max = 500, Default = 16, Color = Color3.fromRGB(255,140,0), Increment = 1, ValueName = "speed", Callback = function(v) walkSpeedValue = v updateSpeed() end})
 PlayerTab:AddSlider({Name = "JumpPower", Min = 50, Max = 500, Default = 50, Color = Color3.fromRGB(0,170,255), Increment = 1, ValueName = "jump", Callback = function(v) jumpPowerValue = v updateJump() end})
 PlayerTab:AddToggle({Name = "Noclip", Default = false, Callback = function(v) noclipEnabled = v toggleNoclip() end})
-PlayerTab:AddToggle({Name = "God Mode (never die)", Default = false, Callback = function(v) toggleGodMode(v) end})
+PlayerTab:AddToggle({Name = "God Mode", Default = false, Callback = function(v) toggleGodMode(v) end})
 PlayerTab:AddToggle({Name = "Ultra Loop (anti-cheat bypass)", Default = false, Callback = function(v)
     if v then
         speedLoop = game:GetService("RunService").Heartbeat:Connect(updateSpeed)
@@ -255,7 +255,7 @@ end})
 VisualTab:AddButton({Name = "Close Panel", Callback = function() OrionLib:Destroy() end})
 
 OrionLib:MakeNotification({
-    Name = "Admin Panel",
+    Name = "Astro",
     Content = "Loaded - WalkSpeed / JumpPower / Noclip / God Mode / Visuals",
     Image = "rbxassetid://4483345998",
     Time = 5
